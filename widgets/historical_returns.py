@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 
-from shared.data_access import connect_to_databricks, run_query
+from shared.data_access import connect_to_databricks, query_database
 
 
 '''
@@ -38,15 +38,8 @@ def get_column_config_for_percentage_df(df):
 # Found in: Databricks > SQL Warehouses
 conn = connect_to_databricks()
 
-
-@st.cache_data(ttl=600)
-def run_query(_conn, query):
-    with _conn.cursor() as cursor:
-        cursor.execute(query)
-        return pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
-    
-returns_df = run_query(conn, "SELECT * FROM financials.default.fact_monthly_benchmark_returns")
-dim_df     = run_query(conn, "SELECT * FROM financials.default.dim_security")
+returns_df = query_database(conn, "SELECT * FROM financials.default.fact_monthly_benchmark_returns")
+dim_df     = query_database(conn, "SELECT * FROM financials.default.dim_security")
 
 
 returns_df = returns_df.merge(
