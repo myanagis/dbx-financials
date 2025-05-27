@@ -1,19 +1,5 @@
-# :earth_americas: GDP dashboard template
+# Mike Yanagisawa (MBY) Databricks (DBX) Financials Website
 
-A simple Streamlit app showing the GDP of different countries in the world.
+COntains experiments for financial tools. Builds on top of a Databricks server that houses financial information. 
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
-
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+[Open website](https://mby-dbx-financials.streamlit.app/)

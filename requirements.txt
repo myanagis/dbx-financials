@@ -4,5 +4,6 @@ matplotlib
 databricks
 datetime
 databricks-sql-connector
-plotly
 altair
+scipy
+streamlit_flow

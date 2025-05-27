@@ -4,18 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 
-from shared.data_access import connect_to_databricks, query_database
-
-
-'''
-st.sidebar.title("DBX financials")
-st.sidebar.markdown("Use sidebar to navigate")
-'''
-
-st.title("Page 1")
-st.write("This is the first additional page.")
-
-
+from shared import data_access, finance_utils, display_utils
 
 # Helpers for displaying in streamlit -----
 
@@ -36,32 +25,14 @@ def get_column_config_for_percentage_df(df):
 
 # Securely use secrets in production
 # Found in: Databricks > SQL Warehouses
-conn = connect_to_databricks()
+conn = data_access.connect_to_databricks()
 
-returns_df = query_database(conn, "SELECT * FROM financials.default.fact_monthly_benchmark_returns")
-dim_df     = query_database(conn, "SELECT * FROM financials.default.dim_security")
+lookback_years_list = [1, 3, 5, 10, 20, 30]
 
+end_year = datetime.now().year()
+start_year = end_year - lookback_years_list.max()
 
-returns_df = returns_df.merge(
-    dim_df[["security_id", "short_name"]],
-    how="left", 
-    left_on="security_id",
-    right_on="security_id"
-)
-
-
-# DATA PROCESSING ----
-
-#Callable objects:
-# - pivot_df (all of the financial data, with index of "Date" and columns of different short_name)
-
-pivot_df = returns_df.pivot_table(
-    index="date_id",
-    columns="short_name",
-    values="return_percent",
-    aggfunc="first"  # or "mean", "max", etc., depending on your use case
-)
-
+pivot_df = data_access.get_benchmark_returns_data(conn, start_year, end_year)
 
 # Historical returns ------
 def geometric_mean(series):
@@ -82,7 +53,7 @@ means_dict = {}
 # Timeframes
 timeframes = {}
 # Add the following years
-for years_lookback in [1, 3, 5, 10, 20, 30]:
+for years_lookback in lookback_years_list:
     upper_cutoff = max_date 
     lower_cutoff = max_date - years_lookback*100
     timeframes[str(years_lookback)+"Y"] = (lower_cutoff, upper_cutoff)
@@ -105,16 +76,10 @@ for label, cutoff_params in timeframes.items():
 means_df = pd.DataFrame(means_dict)
 
 
-
-# Prep the table
-means_df_for_display = means_df * 100
-column_config = get_column_config_for_percentage_df(means_df_for_display)
-column_config["SHORT_NAME"] = st.column_config.TextColumn("Security Name")
-
 # Display
 st.subheader("Mean Returns")
 
-st.dataframe(means_df_for_display, column_config=column_config)
+display_utils.display_streamlit_table(means_df)
 
 st.caption("Note: Table above shows annualized returns, looking back X months starting with the most recent data")
 
