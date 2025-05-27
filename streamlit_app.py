@@ -20,3 +20,21 @@ pg = st.navigation(
     }
 )
 pg.run()
+
+
+
+st.divider()
+
+# Footer
+current_year = datetime.now().year
+if current_year == 2025:
+    date_range_str = "2025"
+else:
+    date_range_str = f"2025-{current_year}"
+st.markdown(
+    f"""
+    <div style="text-align: center; color=gray; font-size: 0.8em;">
+     &copy; {date_range_str} Mike Yanagisawa | <a href="https://github.com/myanagis/dbx-financials">Github</a>
+    </div>
+""", unsafe_allow_html=True
+)
