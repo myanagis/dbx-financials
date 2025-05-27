@@ -271,7 +271,7 @@ portfolio_structure = {
 
 # MODEL PORTFOLIO
 # Retrieve the portfolio weights from CSV
-all_portfolio_weights_df = data_access.read_csv_from_folder("/workspaces/dbx-financials/data/endowment_portfolio_weights.csv")
+all_portfolio_weights_df = data_access.read_csv_from_folder("data/endowment_portfolio_weights.csv")
 
 MODEL_PORTFOLIO_CUSTOM = "Custom"
 MODEL_PORTFOLIO_YALE_2013 = "Yale 2013"
