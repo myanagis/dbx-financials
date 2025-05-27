@@ -9,7 +9,8 @@ from shared import data_access, finance_utils, display_utils, input_utils
 
 
 ### PREP ----
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Endowment Tax Analysis | Mike Yanagisawa",
+                   layout="wide")
 
 ### DATA PULL ------------------
 
