@@ -117,11 +117,8 @@ st.caption("Mike Yanagisawa | May 27, 2025")
 
 
 st.markdown(f"""
-In the Tax Cuts and Jobs Act of 2017, Trump taxed select endowments at a rate of 1.4%. 
-In the past couple years, Republicans have increasignly looked to taxing the wealthy endowments (such as Yale and Harvard) 
-as both (a) a way to fight the US deficit and (b) a weapon against the so-called elite institutions. A document floating around Congress
-(and retrieved by the New York Times) estimated
-that the endowment tax could generate up to $10bn in "savings" over 10 years.{link_to_ref("nyt-10bn-savings")} 
+In the Tax Cuts and Jobs Act of 2017, Trump taxed select endowments at a rate of 1.4%. In the past year, Republicans have increasingly looked to taxing the wealthy endowments (such as Yale and Harvard) as both a way to fight the US deficit and a weapon against the so-called elite institutions. 
+A document floating around Congress (and retrieved by the New York Times) estimated that the endowment tax could generate up to $10bn in "savings" over 10 years.{link_to_ref("nyt-10bn-savings")} 
 Below is how much has been collected by the IRS in the past few years from this tax {link_to_ref("tax_rev_22_23")}:
 """, unsafe_allow_html=True)
 
@@ -189,20 +186,20 @@ st.markdown(f"""
 
 ##### How large will the tax be?
 
-Currently, the tax rate sits at **1.4%** of "net investment income,"{add_footnote("Depeer discussion of code is in [IRC 4968](https://www.irs.gov/pub/newsroom/1-excise-tax-on-net-investment-income-colleges-4968-13701_508.pdf). Net investment income = (gross investment income + capital gain net income) – allowable deductions")}
+Currently, the endowment tax rate sits at **1.4%** of "net investment income,"{add_footnote("Depeer discussion of code is in [IRC 4968](https://www.irs.gov/pub/newsroom/1-excise-tax-on-net-investment-income-colleges-4968-13701_508.pdf). Very roughly speaking, net investment income = (gross investment income + capital gain net income) – allowable deductions")}
 To qualify for the tax, a university must:
 - Have at least 500 tuition-paying students
 - Have more than 50 percent of students in the US, and
 - The fair market value (FMV) of assets per full-time student must be at least $500K.
 
-In the past year or so, other Congressmen have proposed various amendments, which gives us a sense of the direction and ancillary political motivations for the tax:
-| Date | Proposed By | Tax Rate | Changes to Qualification Crtieria | Notes | Ref |
+In the past year or so, Congressmen have proposed various amendments, which give us a sense of the direction (and political motivations) for the tax:
+| Date | Proposed By | Tax Rate | Changes to Qualification Criteria | Notes | Ref |
 |-------------|----------------|-----------------|-------------|----------------|-----------------|
 | Dec 2023 | Sen JD Vance | 35% | Applies if FMV > $10bn | | {add_ref("https://www.congress.gov/bill/118th-congress/senate-bill/3514", "S.3514 - A bill to amend the Internal Revenue Code of 1986 to increase the excise tax on net investment income of certain private colleges and universities.")} | 
 | Jan 2025 | Congressman Troy Nehls | 21% | No new criteria | Tax rate rationale is to have endowment tax match corporate tax rate. | {add_ref("https://nehls.house.gov/media/press-releases/rep-troy-e-nehls-introduces-bill-hold-elite-university-endowments-accountable#:~:text=Prior%20to%20the%20enactment%20of,at%20a%20rate%20of%201.4%25.", "Rep. Troy E. Nehls Introduces Bill to Hold Elite University Endowments Accountable")} | 
 | Feb 2025 | Congressmen Dave Joyce and Nicole Malliotakis | 10% | Lower per-student threshold to $250K | Increase tax rate to 20% if tuition increases by more than inflation. | {add_ref("https://joyce.house.gov/posts/joyce-malliotakis-introduces-bill-to-hold-higher-education-institutions-accountable-for-student-debt-crisis", "Joyce, Malliotakis Introduces Bill to Hold Higher Education Institutions Accountable for Student Debt Crisis")} |
 | Feb 2025 | Congressman Mike Lawler | 10% | Lower per-student threshold to $200K | | {add_ref("https://lawler.house.gov/news/documentsingle.aspx?DocumentID=3716", "Congressman Lawler Reintroduces the Endowment Accountability Act to Ensure Wealthy Universities Invest in Students")} |
-| Mar 2025 | Congressman Vern Buchanan | 10% | Exclude non-US citizens from per-student threshold | Would tax about 10-12 additional schools,including Columbia and Cornell | {add_ref("https://buchanan.house.gov/2025/3/buchanan-introduces-bill-to-prioritize-enrolling-american-students-in-higher-education", "Buchanan Introduces Bill to Prioritize Enrolling American Students in Higher Education") } |
+| Mar 2025 | Congressman Vern Buchanan | 10% | Exclude non-US citizens from per-student threshold | Would tax about 10-12 additional schools, including Columbia and Cornell | {add_ref("https://buchanan.house.gov/2025/3/buchanan-introduces-bill-to-prioritize-enrolling-american-students-in-higher-education", "Buchanan Introduces Bill to Prioritize Enrolling American Students in Higher Education") } |
 
 
 ##### Current tax rate proposal (as of May 26, 2025)
@@ -223,10 +220,7 @@ As a side note: on page 283, it also updates foundations' tax rate based on tota
 
 ##### What will the impact be on asset allocation?
 
-Patrick Geddes and his team at Aperio Group (a company acquired by BlackRock in 2020) 
-wrote a paper in 2015, provocatively titled "What Would Yale Do If It Were Taxable?"{link_to_ref("aperio-paper")}. When they wrote the paper, they initially had
-ultra-high net work individuals in mind; Aperio specialized in customizable indexes like tax-efficient ones. Little did they know that the
-ideas in the paper would be relevant 10 years later for endowments and foundations. 
+Patrick Geddes and his team at Aperio Group (a company acquired by BlackRock in 2020) wrote a paper in 2015, provocatively titled "What Would Yale Do If It Were Taxable?"{link_to_ref("aperio-paper")}. When they wrote the paper, they initially had ultra-high net worth individuals in mind. (Coincidentally, Aperio specialized in customizable indexes like tax-efficient ones.) Little did they know that the ideas in the paper would be relevant 10 years later for endowments and foundations. 
 
 What follows is an extension of this paper's ideas, bringing the mean-variance optimization and analysis up to present day. 
 """,
@@ -244,7 +238,7 @@ st.header("Our Model Portfolio")
 
 # Text
 st.write("""
-By default, the portfolio allocation assumptions use Yale's 2013 data (as provided by Aperio). The asset class proxies also use similar ones to Aperio.
+By default, the portfolio allocation assumptions use Yale's 2013 asset allocation (as provided by Aperio). The asset class proxies we use are similar to the ones Aperio uses.
 """)
 
 # GENERAL PORTFOLIO INFO
@@ -399,7 +393,7 @@ with col1:
         )
 
 with col2:
-    raw_other_tax_rate = st.number_input("Custom endowment tax rate (in %) (if Other selected above):", step=1.)
+    raw_other_tax_rate = st.number_input("""Custom endowment tax rate (in %) (if "Other" selected):""", step=1.)
 
 # Get the selected tax rate (in float)
 selected_tax_rate_float = 0.0
@@ -420,10 +414,10 @@ with st.expander("Other Assumptions"):
     col1, col2, _ = st.columns(3)
 
     with col1:
-        expected_market_return = input_utils.percent_input("Expected market return (in %, e.g. '8' for '8%'):", 
+        expected_market_return = input_utils.percent_input("""Expected market return (in %, e.g. "8" for "8%"):""", 
                                                            value=default_expected_market_return)
     with col2:
-        rf = input_utils.percent_input("Risk-free rate (in %, e.g. '2' for '2%'):", 
+        rf = input_utils.percent_input("""Risk-free rate (in %, e.g. "2" for "2%"):""", 
                                            value=default_rf)
 
     st.markdown(f"""
@@ -663,9 +657,7 @@ st.graphviz_chart(flowchart_code)
 st.subheader("Step 1: Calculate Pre-Tax Implied Returns")
 
 st.markdown(f"""
-The first step of the process is to calculate the implied returns, based on portfolio weights. The process uses (a) portfolio weights and 
-(b) historical covariances to calculate the implied expected returns using a reverse mean-variance optimizer. 
-We calculate the covariance matrix for the time range input above and use other assumptions listed above.
+The first step of the process is to calculate the implied returns, based on portfolio weights. The process uses (a) portfolio weights and (b) historical covariances to calculate the implied expected returns using a reverse mean-variance optimizer. We calculate the covariance matrix for the time range input above and use the other assumptions listed above.
 """
 )
 
@@ -680,7 +672,7 @@ We first calculate risk aversion: ${lambda_formula}$, where:
   - $w$ are the portfolio weights (n x 1 matrix)
   -  $\\Sigma$ is the covariances (n x n matrix)
 
-The implied returns $\\mu$ are then calculated with: $\\mu = \\lambda \\cdot \\Sigma w$. The results given the parameters above are below:
+The implied returns $\\mu$ are then calculated with: $\\mu = \\lambda \\cdot \\Sigma w$. The results:
 
 """)
 
@@ -690,6 +682,17 @@ display_utils.display_streamlit_table(master_portfolio_df,
                                       percent_columns=["Portfolio Weights", "Implied Pre-Tax Returns"],
                                       highlight_columns=["Implied Pre-Tax Returns"] )
 
+abs_return_ticker = master_portfolio_df.loc["Absolute Return", "Benchmark Ticker"]
+world_public_eq_return_ticker = master_portfolio_df.loc["World Public Equity", "Benchmark Ticker"]
+corr_matrix = monthly_returns_df.corr()
+
+st.markdown(f"""
+###### Correlation Matrix
+The correlations between assets is also important. The full correlation matrix is copied below. Of note:
+- Correlation between World Public Equity ({world_public_eq_return_ticker}) and Absolute Return ({abs_return_ticker}): **{corr_matrix.loc[abs_return_ticker, world_public_eq_return_ticker]:.3f}**
+""")
+
+st.write(corr_matrix)
 
 # Step 2 ----------------------------------------------
 
@@ -697,16 +700,11 @@ st.subheader("Step 2: Apply Tax Haircuts to Pre-Tax Returns")
 
 st.markdown(
 """
-The next step is to apply a tax haircut to the pre-tax returns. For example, a 10% realized return with a 30% tax rate
-shrinks to a 7% return. The Aperio paper targets personal investors with a worst-case tax scenario with a 
-44.6% short-term/ordinary tax, and a 25% long-term/dividends tax rate.
+The next step is to apply a tax haircut to the pre-tax returns. For example, a 10% realized return with a 30% tax rate shrinks to a 7% return. The Aperio paper targets personal investors with a worst-case tax scenario with a 44.6% short-term/ordinary tax, and a 25% long-term/dividends tax rate.
 
-Endowment taxes are based on net investment income (NII), which does not distinguish between short-term and long-term returns.
-Therefore, we assume that all realized returns (ordinary income, realized short-term, realized long-term, dividends) 
-are taxed at the NII rate. 
+Endowment taxes are based on net investment income (NII), which does not distinguish between short-term and long-term returns. Therefore, we assume that all realized returns (ordinary income, realized short-term, realized long-term, dividends) are taxed at the NII rate. 
 
-Aperio makes some estimates on the estimated realized vs. unrealizd returns are by asset class. We use their assumptions unmodified 
-and calculate a total percent of the asset class' returns that are realized.
+Aperio makes some estimates on the estimated realized vs. unrealized returns are by asset class. We use their assumptions unmodified and calculate a total percent of the asset class's returns that are realized.
 """
 )
 
@@ -742,7 +740,7 @@ st.markdown(
 Our last step is to run the mean-variance optimization on the new post-tax weights to try to answer the ultimate question, "what would
 taxes do to our portfolio weights?" The process we use is to minimize portfolio variance, subject to a few constraints:
 - Long-only (all portfolio weights are greater than 0%)
-- The expected portfolio returns equal the target return
+- The expected portfolio returns equals the target return
 
 The long-only constraint makes a closed-form solution impossible, so our formula looks something like this:
 - Minimize $\\sigma_p^2$
@@ -754,7 +752,7 @@ The long-only constraint makes a closed-form solution impossible, so our formula
 """
 )
 
-st.markdown("###### Post-Tax Porfolio Weights")
+st.markdown("###### Post-Tax Portfolio Weights")
 columns_to_display = ["Benchmark Ticker", "Display Name", "Pre-Tax Weights", "Post-Tax Weights", "Portfolio Weight Change", "Implied Pre-Tax Returns", "Post-Tax Returns"]
 display_utils.display_streamlit_table(master_portfolio_with_tax_df[columns_to_display],
                                       highlight_columns=["Pre-Tax Weights", "Post-Tax Weights", "Portfolio Weight Change"])
@@ -764,12 +762,11 @@ st.subheader("Takeaways")
 st.markdown("""
 
 When I first read the Aperio paper, I assumed the large implied portfolio allocation changes stemmed from
-the exhorbitant tax rate assumptions (44.6% short-term/ordinary tax, and a 25% long-term/dividends tax rate).
-What surprised me, though, was that **even a "small" change in the tax rate can imply large 
+the exorbitant tax rate assumptions (44.6% short-term/ordinary tax, and a 25% long-term/dividends tax rate).What surprised me, though, was that **even a "small" change in the tax rate can imply large 
 changes in portfolio allocation**.
 
 Let's take one example: a 7% tax on the Yale 2020 portfolio, using data from 2006 to 2025. 
-The allocation impact is on such a "small" tax rate increase is striking:
+The allocation impact on such a "small" tax rate increase is striking:
 - Significantly less absolute return (23.5% to 9.7%) and significantly more cash (1.5% to 9.1%), and
 - Significantly more public equity (14.0% to 24.9%) and slightly less private equity (41% to 39.3%)
 """)
@@ -794,7 +791,6 @@ We disregard many other pieces of the portfolio, including important things like
 bounds in Step 3, but this perhaps further emphasizes that mean-variance optimization isn't the whole story.
 
 **Further directions:**
-- The Aperio paper goes a step further and tweaks the covariance matrix using a Monte Carlo simulation. We haven't done that yet.
-- We use the same asset class proxies as Aperio. I would love to able to allow the ability to add more proxies.
-            
+- The Aperio paper goes a step further and tweaks the covariance matrix using a Monte Carlo simulation. I haven't implemented these quite yet.
+- We use the same asset class proxies as Aperio. I hope to allow you the ability to select the proxies used (as well as break out venture capital from private equity).
 """)
