@@ -8,7 +8,9 @@ def read_csv_from_folder(filepath, index_col=0, convert_percents=True):
     """
     Reads a CSV file from an internal file
     """
-    data_filename = Path(__file__).parent/filepath
+    
+    # Go up two parents to get to the core /dbx folder (assume that this file is in /dbx/shared/data_access.py)
+    data_filename = Path(__file__).parent.parent/filepath
     df = pd.read_csv(data_filename, index_col=index_col)
 
     # Convert percents to floats if asked to
