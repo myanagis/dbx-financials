@@ -84,7 +84,7 @@ def filter_monthly_returns_by_year(df, start_year, end_year):
                       ]
     return filtered_df
 
-def get_benchmark_returns_data(conn, start_year, end_year, indexes_to_use):
+def get_benchmark_returns_data(conn, start_year, end_year, indexes_to_use = []):
     
     # Get the raw returns data from SQL database
     long_form_returns_df = query_database(conn, f"SELECT * FROM {FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME}")
