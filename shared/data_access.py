@@ -106,15 +106,16 @@ class FactUniversityEnrollment():
 
 def query_mock_database(table_name):
     table_to_file_dict = {
-        FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/fact_monthly_benchmark_returns_4jun25.csv",
-        DimSecuritySchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/dim_security_4jun25.csv",
+        FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME: "/data/silver/fact_monthly_benchmark_returns_4jun25.csv",
+        DimSecuritySchema.FULL_TABLE_NAME: "/data/silver/dim_security_4jun25.csv",
 
-        DimUniversitySystemSchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/dim_university_systems_top300privates_4jun25.csv",
-        FactUniversityFinancials.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/university_financials_990_data_top_300_v2.csv",
-        FactUniversityEnrollment.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/fact_university_enrollment_4jun25_good.csv"
+        DimUniversitySystemSchema.FULL_TABLE_NAME: "/data/silver/dim_university_systems_top300privates_4jun25.csv",
+        FactUniversityFinancials.FULL_TABLE_NAME: "/data/silver/university_financials_990_data_top_300_v2.csv",
+        FactUniversityEnrollment.FULL_TABLE_NAME: "/data/silver/fact_university_enrollment_4jun25_good.csv"
     }
     table_csv_filepath = table_to_file_dict.get(table_name)
-    df = pd.read_csv(table_csv_filepath)
+    data_filename = Path(__file__).parent.parent/table_csv_filepath
+    df = pd.read_csv(data_filename)
     return df
 
 
