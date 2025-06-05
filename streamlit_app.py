@@ -10,7 +10,7 @@ from databricks import sql
 # Define the pages
 #main_page = st.Page("streamlit_app.py", title="Main Page")
 endowment_tax = st.Page("widgets/endowment_tax_analysis.py", title="Endowment Tax: Portfolio Allocation")
-endowment_tax_by_university = st.Page("widgets/endowment_tax_by_university.py", title="Endowment Tax By University")
+endowment_tax_by_university = st.Page("widgets/endowment_tax_by_university.py", title="Endowment Tax By University (beta)")
 historical_returns = st.Page("widgets/historical_returns.py", title="Historical Returns")
 
 # Set up navigation
