@@ -1,4 +1,4 @@
-# Mike Yanagisawa (MBY) Databricks (DBX) Financials Website
+# Mike Yanagisawa (MBY) Financials Website
 
 Contains experiments for financial tools. Builds on top of a Databricks server that houses financial information. 
 
