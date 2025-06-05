@@ -23,6 +23,8 @@ def read_csv_from_folder(filepath, index_col=0, convert_percents=True):
 
 ### Databricks - Generic ------------------
 
+TURN_DATABRICKS_OFF = True
+
 def connect_to_databricks():
     """
     Establish a connection to Databricks using credentials stored in Streamlit secrets.
@@ -34,12 +36,18 @@ def connect_to_databricks():
         KeyError: If required keys are missing from Streamlit secrets.
         databricks.sql.exc.InterfaceError: If the connection fails due to network or credential issues.
     """
+
+    if TURN_DATABRICKS_OFF:
+        return None
+
     conn = sql.connect(
         server_hostname = st.secrets["databricks"]["server_hostname"],
         http_path = st.secrets["databricks"]["http_path"],
         access_token = st.secrets["databricks"]["access_token"] 
     )
     return conn
+
+
 
 @st.cache_data(ttl=600)
 def query_database(_conn, query):
@@ -62,6 +70,9 @@ def query_database(_conn, query):
         return pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
     
 
+
+
+
 ### Databricks: Specific -----------------
 
 class FactMonthlyBenchmarkReturnsSchema():
@@ -75,6 +86,39 @@ class DimSecuritySchema():
     COL_SECURITY_ID = "security_id"
     COL_SHORT_NAME = "short_name"
 
+
+# University stuff
+class DimUniversitySystemSchema():
+    FULL_TABLE_NAME = "financials.default.dim_university_system"
+    COL_UNIVERSITY_NAME = "university_name"
+    COL_EIN = "ein"
+    COL_YEAR = "year"
+
+class FactUniversityFinancials():
+    FULL_TABLE_NAME = "financials.default.fact_university_financials"
+    #COL_UNIVERSITY_ID = "university_id"
+    COL_EIN = "ein"
+
+class FactUniversityEnrollment():
+    FULL_TABLE_NAME = "financials.default.fact_university_enrollment"
+    COL_INSTITUTION_NAME = "institution_name"
+    COL_YEAR = "year"
+
+def query_mock_database(table_name):
+    table_to_file_dict = {
+        FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/fact_monthly_benchmark_returns_4jun25.csv",
+        DimSecuritySchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/dim_security_4jun25.csv",
+
+        DimUniversitySystemSchema.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/dim_university_systems_top300privates_4jun25.csv",
+        FactUniversityFinancials.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/university_financials_990_data_top_300_v2.csv",
+        FactUniversityEnrollment.FULL_TABLE_NAME: "/workspaces/dbx-financials/data/silver/fact_university_enrollment_4jun25_good.csv"
+    }
+    table_csv_filepath = table_to_file_dict.get(table_name)
+    df = pd.read_csv(table_csv_filepath)
+    return df
+
+
+
 def filter_monthly_returns_by_year(df, start_year, end_year):
     upper_cutoff = (end_year+1)*100 - 1
     lower_cutoff = start_year*100
@@ -84,11 +128,16 @@ def filter_monthly_returns_by_year(df, start_year, end_year):
                       ]
     return filtered_df
 
+
 def get_benchmark_returns_data(conn, start_year, end_year, indexes_to_use = []):
     
     # Get the raw returns data from SQL database
-    long_form_returns_df = query_database(conn, f"SELECT * FROM {FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME}")
-    dim_df     = query_database(conn, f"SELECT * FROM {DimSecuritySchema.FULL_TABLE_NAME}")
+    if TURN_DATABRICKS_OFF:
+        long_form_returns_df = query_mock_database(FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME)
+        dim_df = query_mock_database(DimSecuritySchema.FULL_TABLE_NAME)
+    else:
+        long_form_returns_df = query_database(conn, f"SELECT * FROM {FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME}")
+        dim_df     = query_database(conn, f"SELECT * FROM {DimSecuritySchema.FULL_TABLE_NAME}")
 
     long_form_returns_df = long_form_returns_df.merge(
         dim_df[[DimSecuritySchema.COL_SECURITY_ID, 
@@ -123,3 +172,43 @@ def get_benchmark_returns_data(conn, start_year, end_year, indexes_to_use = []):
         monthly_returns_df = monthly_returns_df[indexes_to_use]
     
     return monthly_returns_df
+
+
+
+def get_university_financial_and_enrollment_data(conn):
+    """
+    dim_university_system = query_database(conn, f"SELECT * FROM {DimUniversitySystemSchema.FULL_TABLE_NAME}")
+    fact_university_financials = query_database(conn, f"SELECT * FROM {FactUniversityFinancials.FULL_TABLE_NAME}")
+    fact_university_enrollment = query_database(conn, f"SELECT * FROM {FactUniversityEnrollment.FULL_TABLE_NAME}")
+    """
+
+    # Get all of the data
+    dim_university_system = query_mock_database(DimUniversitySystemSchema.FULL_TABLE_NAME)
+    fact_university_financials = query_mock_database(FactUniversityFinancials.FULL_TABLE_NAME)
+    fact_university_enrollment = query_mock_database(FactUniversityEnrollment.FULL_TABLE_NAME)
+
+    # Our root source of truth is DIM_UNIVERSITY
+    # - Merge in the FACT_UNIVERSITY_FINANCIALS, mapping on "ein"
+    # - Merge "left" to include all universities (so we can see which are missing data)
+    fact_university_financials = fact_university_financials.rename(
+        columns={FactUniversityFinancials.COL_EIN: "fin_ein"}
+    )
+    df = dim_university_system.merge(fact_university_financials, 
+                                        left_on=DimUniversitySystemSchema.COL_EIN,
+                                        right_on="fin_ein",
+                                        how="left"
+    ).drop(columns=["fin_ein"])
+
+    # Next, merge in the enrollment data. Match on both NAME and YEAR. 
+    # ("name" is *definitely* imperfect, but good enough for the majority of privates.)
+    fact_university_enrollment = fact_university_enrollment.rename(
+        columns={FactUniversityEnrollment.COL_YEAR: "enroll_year"}
+    )
+    df = df.merge(
+        fact_university_enrollment,
+        left_on=[DimUniversitySystemSchema.COL_UNIVERSITY_NAME, DimUniversitySystemSchema.COL_YEAR],
+        right_on=[FactUniversityEnrollment.COL_INSTITUTION_NAME, "enroll_year"],
+        how="left"
+    ).drop(columns=["enroll_year"])
+
+    return df

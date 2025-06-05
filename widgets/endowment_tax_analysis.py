@@ -9,7 +9,7 @@ from shared import data_access, finance_utils, display_utils, input_utils
 
 
 ### PREP ----
-st.set_page_config(page_title="Endowment Tax Analysis | Mike Yanagisawa",
+st.set_page_config(page_title="Endowment Tax Analysis: Portfolio Allocation | Mike Yanagisawa",
                    layout="wide")
 
 ### DATA PULL ------------------
@@ -107,7 +107,7 @@ add_reference_to_dictionary("aperio-paper",
 # ----------------------------------------------------------
 
 # Write directly to the app
-st.title(f"Analyzing Impact of Endowment Taxes")
+st.title(f"Analyzing Portfolio Impact of Endowment Taxes")
 st.caption("Mike Yanagisawa | May 27, 2025")
 
 
@@ -757,6 +757,11 @@ columns_to_display = ["Benchmark Ticker", "Display Name", "Pre-Tax Weights", "Po
 display_utils.display_streamlit_table(master_portfolio_with_tax_df[columns_to_display],
                                       highlight_columns=["Pre-Tax Weights", "Post-Tax Weights", "Portfolio Weight Change"])
 
+
+# Takeaways ---------------------------------------------
+
+st.divider()
+
 st.subheader("Takeaways")
 
 st.markdown("""
@@ -793,4 +798,14 @@ bounds in Step 3, but this perhaps further emphasizes that mean-variance optimiz
 **Further directions:**
 - The Aperio paper goes a step further and tweaks the covariance matrix using a Monte Carlo simulation. I haven't implemented these quite yet.
 - We use the same asset class proxies as Aperio. I hope to allow you the ability to select the proxies used (as well as break out venture capital from private equity).
+""")
+
+# Takeaways ---------------------------------------------
+
+st.divider()
+
+st.subheader("Technical Notes")
+
+st.markdown("""
+- Financial data downloaded from Bloomberg via flatfile and ETL'ed into a Databricks SQL database. (Due to costs of running Databricks, I subsequently am storing the data in a mock SQL database.)
 """)
