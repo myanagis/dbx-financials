@@ -7,4 +7,4 @@ databricks-sql-connector
 altair
 scipy
 streamlit_flow
-numpy
+numpy<2.0
