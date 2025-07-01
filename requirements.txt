@@ -7,7 +7,7 @@ databricks-sql-connector
 altair
 scipy
 streamlit_flow
-numpy
+numpy==1.25.2
 bs4
 markdownify
 html2text
