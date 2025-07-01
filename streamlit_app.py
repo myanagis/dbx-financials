@@ -12,13 +12,17 @@ from databricks import sql
 endowment_tax = st.Page("widgets/endowment_tax_analysis.py", title="Endowment Tax: Portfolio Allocation")
 endowment_tax_by_university = st.Page("widgets/endowment_tax_by_university.py", title="Endowment Tax By University (beta)")
 historical_returns = st.Page("widgets/historical_returns.py", title="Historical Returns")
+data_architecture = st.Page("widgets/data_architecture.py", title="Data Architecture")
+pdf_parser = st.Page("widgets/pdf_parser.py", title="PDF Parser")
+sec_file_download = st.Page("widgets/sec_file_download.py", title="SEC File Download")
 
 # Set up navigation
 pg = st.navigation(
     {
         #"Home": [main_page],
         #"Tools": [endowment_tax, historical_returns]
-        "Tools": [endowment_tax, endowment_tax_by_university, historical_returns]
+        #"Tools": [endowment_tax, endowment_tax_by_university, sec_file_download, pdf_parser, historical_returns, data_architecture]
+        "Tools": [endowment_tax, sec_file_download, historical_returns]
     }
 )
 pg.run()

@@ -19,6 +19,22 @@ st.caption("Mike Yanagisawa | June 5, 2025")
 
 
 
+## Schema -----
+class UniversityDataSchema():
+    COL_INVESTMENT_INCOME = "investment_income"
+    COL_GROSS_RENT_INCOME = "gross_rent_income"
+    COL_ROYALTIES_INCOME = "royalties_income"
+    COL_SALE_OF_ASSETS_INCOME = "sale_of_assets_income"
+    COL_INVESTMENT_MANAGEMENT_FEES = "investment_management_fees"
+    COL_ROYALTIES_EXPENSE = "royalties_expenses"
+    
+    COL_YEAR = "year"
+    
+    COL_CY_ENDOWMENT_BEGINNING_BALANCE = "cy_endowment_beginning_balance"
+    COL_CY_ENDOWMENT_END_BALANCE = "cy_endowment_end_balance"
+    COL_CY_ENDOWMENT_NET_INVESTMENT_EARNINGS = "cy_endowment_net_investment_earnings"
+
+
 
 ### DATA PULL ------------------
 
@@ -34,9 +50,34 @@ university_df = data_access.get_university_financial_and_enrollment_data(conn)
 # Manipulate
 # Calculate per-student endowment
 university_df["endowment_per_student"] = university_df["cy_endowment_end_balance"] / university_df["total_enrollment"]
+university_df["Invsetment_return_percent"] = university_df[UniversityDataSchema.COL_CY_ENDOWMENT_NET_INVESTMENT_EARNINGS] / university_df[UniversityDataSchema.COL_CY_ENDOWMENT_BEGINNING_BALANCE]
 
 
 
+# ---------------
+st.header("Search by University")
+university_name = st.selectbox("Select university to dive into:", university_df[["university_name"]].sort_values(by=["university_name"], ascending=True).drop_duplicates() )
+
+subset_df = university_df[ university_df["university_name"] == university_name ]
+st.dataframe(subset_df)
+
+df_long = subset_df.melt(id_vars=UniversityDataSchema.COL_YEAR, 
+                  value_vars=[UniversityDataSchema.COL_CY_ENDOWMENT_BEGINNING_BALANCE, UniversityDataSchema.COL_CY_ENDOWMENT_NET_INVESTMENT_EARNINGS], 
+                  var_name='category', 
+                  value_name='amount')
+
+chart = alt.Chart(df_long).mark_line(point=True).encode(
+    x=alt.X('year:O', title='Year'),  # 'O' makes year a discrete axis
+    y=alt.Y('amount:Q', title='Amount ($)', axis=alt.Axis(format='$,.0f')),
+    color='category:N',  # color by 'revenue' or 'expenses'
+    tooltip=['year', 'category', 'amount']
+).properties(
+    width=600,
+    height=400,
+    title='Dollar Amounts per Year'
+)
+
+st.altair_chart(chart)
 
 # Full data Display --------------------------
 st.header("Full data")
@@ -77,13 +118,6 @@ def highlight_per_student_endowment(val):
 
 
 
-class UniversityDataSchema():
-    COL_INVESTMENT_INCOME = "investment_income"
-    COL_GROSS_RENT_INCOME = "gross_rent_income"
-    COL_ROYALTIES_INCOME = "royalties_income"
-    COL_SALE_OF_ASSETS_INCOME = "sale_of_assets_income"
-    COL_INVESTMENT_MANAGEMENT_FEES = "investment_management_fees"
-    COL_ROYALTIES_EXPENSE = "royalties_expenses"
 
 # CASE STUDY
 
