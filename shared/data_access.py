@@ -72,8 +72,26 @@ def query_database(_conn, query):
 
 
 
+def query_mock_database(table_name):
+    table_to_file_dict = {
+        FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME: "data/silver/fact_monthly_benchmark_returns_4jun25.csv",
+        DimSecuritySchema.FULL_TABLE_NAME: "data/silver/dim_security_4jun25.csv",
 
-### Databricks: Specific -----------------
+        DimUniversitySystemSchema.FULL_TABLE_NAME: "data/silver/dim_university_systems_top300privates_4jun25.csv",
+        FactUniversityFinancials.FULL_TABLE_NAME: "data/silver/university_financials_990_data_top_300_v2.csv",
+        FactUniversityEnrollment.FULL_TABLE_NAME: "data/silver/fact_university_enrollment_4jun25_good.csv",
+
+        # SEC EDGAR stuff
+        FactTickerCIKLinkSchema.FULL_TABLE_NAME: "data/silver/sec_edgar/cik_to_ticker_map.csv"
+    }
+    table_csv_filepath = table_to_file_dict.get(table_name)
+    data_filename = Path(__file__).parent.parent/table_csv_filepath
+    df = pd.read_csv(data_filename)
+    return df
+
+
+
+### UNIVERSITY stuff -----------------
 
 class FactMonthlyBenchmarkReturnsSchema():
     FULL_TABLE_NAME = "financials.default.fact_monthly_benchmark_returns"
@@ -103,21 +121,6 @@ class FactUniversityEnrollment():
     FULL_TABLE_NAME = "financials.default.fact_university_enrollment"
     COL_INSTITUTION_NAME = "institution_name"
     COL_YEAR = "year"
-
-def query_mock_database(table_name):
-    table_to_file_dict = {
-        FactMonthlyBenchmarkReturnsSchema.FULL_TABLE_NAME: "data/silver/fact_monthly_benchmark_returns_4jun25.csv",
-        DimSecuritySchema.FULL_TABLE_NAME: "data/silver/dim_security_4jun25.csv",
-
-        DimUniversitySystemSchema.FULL_TABLE_NAME: "data/silver/dim_university_systems_top300privates_4jun25.csv",
-        FactUniversityFinancials.FULL_TABLE_NAME: "data/silver/university_financials_990_data_top_300_v2.csv",
-        FactUniversityEnrollment.FULL_TABLE_NAME: "data/silver/fact_university_enrollment_4jun25_good.csv"
-    }
-    table_csv_filepath = table_to_file_dict.get(table_name)
-    data_filename = Path(__file__).parent.parent/table_csv_filepath
-    df = pd.read_csv(data_filename)
-    return df
-
 
 
 def filter_monthly_returns_by_year(df, start_year, end_year):
@@ -212,4 +215,24 @@ def get_university_financial_and_enrollment_data(conn):
         how="left"
     ).drop(columns=["enroll_year"])
 
+    return df
+
+##############
+# SEC Edgar stuff
+
+class FactTickerCIKLinkSchema():
+    FULL_TABLE_NAME = "financials.default.fact_tickler_cik_link"
+    COL_CIK_STR = "cik_str"
+    COL_TICKER = "ticker"
+    COL_TITLE = "title"
+
+def connect_to_database():
+    """
+    At some point this will be important to implement for real
+    """
+    return None
+
+def get_ticker_to_cik_map(conn):
+    df = query_mock_database(FactTickerCIKLinkSchema.FULL_TABLE_NAME)
+    df = df.set_index(FactTickerCIKLinkSchema.COL_TICKER)
     return df

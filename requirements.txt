@@ -8,3 +8,7 @@ altair
 scipy
 streamlit_flow
 numpy<2.0
+bs4
+markdownify
+html2text
+re

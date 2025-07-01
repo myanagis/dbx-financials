@@ -1,0 +1,9 @@
+[project]
+name = "my-streamlit-app"
+version = "0.1.0"
+description = "A demo Streamlit app using uv"
+dependencies = [
+  "streamlit",
+  "pandas",
+  "matplotlib"
+]
