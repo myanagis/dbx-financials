@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-import logging
 import requests
 from shared import data_access, sec_edgar_utils
 from datetime import datetime
