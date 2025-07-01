@@ -11,7 +11,5 @@ numpy<2.0
 bs4
 markdownify
 html2text
-re
 requests
 zipfile
-io
