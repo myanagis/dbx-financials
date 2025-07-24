@@ -12,3 +12,10 @@ bs4
 markdownify
 html2text
 requests
+openai
+llama_index
+llama-index-retrievers-bm25
+llama-index-vector-stores-chroma
+chromadb
+Stemmer
+python-dotenv

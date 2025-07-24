@@ -23,6 +23,10 @@ Questions/comments? Email me at michael.yanagisawa@gmail.com
 
 st.divider()
 
+
+##################
+### Inputs #######
+##################
 st.subheader("Inputs")
 
 # Input: ticker
@@ -56,19 +60,48 @@ end_year = selected_range[1]
 
 
 st.caption("Note: the API only retrieves at least the last year of filings, but only up to the last 1000 filings.")
-st.divider()
 
+
+return_format = st.pills("Output format", options=["markdown", "html"], default="markdown")
+
+# ------------------------------------
+# Processing
 cik = sec_edgar_utils.get_cik_from_ticker_cik_link(ticker_cik_link_df, selected_ticker)
+if cik is None:
+    st.error(f"Unable to find CIK {cik}. Please select another stock ticker.")
+    st.stop()
 
+##################
+### Results ######
+##################
+
+st.divider()
 
 st.subheader("Results")
 
-if st.button("Click to process the above parameters"):
-    st.write("Working ...")
-
-    # Step 1: Get the filings
+if st.button("Click for results"):
+    
     try:
+        # Step 1: Get the filings
         filings_df = sec_edgar_utils.get_filings_for_cik(cik)
+
+        # Step 2: Look up all the filing text
+        with st.status("Downloading data from the SEC ...", expanded=False) as status:
+            md_filings_list = sec_edgar_utils.retrieve_filings_text(filings_df, cik, selected_filing_types, 
+                                                                    start_year, end_year, 
+                                                                    display_progress_to_streamlit=True,
+                                                                    return_format=return_format)
+
+        zip_buffer = sec_edgar_utils.zip_all_files_and_create_button(md_filings_list, selected_ticker, cik)
+
+        # Step 3. Create download button
+        st.download_button(
+            label="Download All as ZIP",
+            data=zip_buffer,
+            file_name=f"{selected_ticker} filings.zip",
+            mime="application/zip"
+        )
+
     except requests.exceptions.HTTPError as e:
         st.error(f"HTTP error: {e}")
     except requests.exceptions.RequestException as e:
@@ -76,6 +109,5 @@ if st.button("Click to process the above parameters"):
     except Exception as e:
         st.exception(e)  # Shows full traceback nicely in Streamlit
 
-    # Step 2: Look up all the filing text
-    md_filings_list = sec_edgar_utils.retrieve_filings_text(filings_df, cik, selected_filing_types, start_year, end_year, display_progress=True)
-    sec_edgar_utils.zip_all_filesand_create_button(md_filings_list, selected_ticker, cik)
+    
+    
