@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import zipfile
 import io
+from pathlib import Path
 import html2text
 from markdownify import markdownify as md
 import re
@@ -19,7 +20,7 @@ HEADERS = {"User-Agent": "Your Name/your_email@example.com"}
 ####
 # Tidying tables and HTML
 
-def clean_up_soup(soup):
+def remove_extraneous_html_soup_elements(soup):
     
     # Remove <?xml ...?> declarations (not inside soup, but can show up in raw text)
     # Find only top-level text nodes (e.g., those not wrapped in a tag)
@@ -201,11 +202,66 @@ def inline_styles_to_semantic(soup):
             new_wrapper.string = span.get_text()
             span.replace_with(new_wrapper)
 
+def sec_edgar_items_to_h2(soup):
+
+    # FUTURE: if we have issues with this, we can also check for bolding
+
+    # SEC 10-Ks seem to follow a nice flow of:
+    #   PART
+    #    ITEM
+    #      NOTE
+
+    # Regex pattern: matches "Item " followed by a digit, optional capital letter, a dot, and text
+    part_pattern = re.compile(r'^PART\s+[IVXLCDM]+$', re.IGNORECASE)
+    item_pattern = re.compile(r'^Item\s+\d+[A-Z]?\.\s+.+', re.IGNORECASE)
+    note_pattern = re.compile(r'^NOTE\s+\d+\.', re.IGNORECASE)
+    note_with_string_pattern = re.compile(r'^Note\s+\d+[A-Z]?\.\s+.+', re.IGNORECASE)
+
+    # Find all <span> tags NOT inside a <table>
+    outside_table_spans = [
+        span for span in soup.find_all("span")
+        if not span.find_parent("table")
+    ]
+
+    # Print the results
+    for span in outside_table_spans:
+
+        text_stripped = span.get_text(strip=True)
+        text = span.get_text()
+
+        # Find the "PART I" patterns -> H1
+        if part_pattern.match(text_stripped):
+            header = soup.new_tag("h1")
+            header.string = text
+            span.replace_with(header)
+        
+        # Find the "Item #. XYZ" patterns -> H2
+        elif item_pattern.match(text_stripped):
+            header = soup.new_tag("h2")
+            header.string = text
+            span.replace_with(header)
+
+        # Find the "Note #. XYZ" patterns -> H3
+        elif note_pattern.match(text_stripped) or note_with_string_pattern.match(text):
+            header = soup.new_tag("h3")
+            header.string = text
+            span.replace_with(header)
+
 ############################
 # Data retrieval
 
 def get_cik_from_ticker_cik_link(ticker_cik_link_df, ticker):
-    return ticker_cik_link_df.loc[ticker, data_access.FactTickerCIKLinkSchema.COL_CIK_STR]
+    """
+    Gets the CIK for a given stock ticker. 
+
+    Right now, retrieves it from a dataframe. In the future, this may be more dynamic.
+
+    Returns None if it couldn't find anything.
+    """
+    try:
+        return ticker_cik_link_df.loc[ticker, data_access.FactTickerCIKLinkSchema.COL_CIK_STR]
+    except KeyError:
+        return None # Catch error
 
 
 def get_filings_for_cik(cik:str):
@@ -246,7 +302,14 @@ def build_link_to_full_submission_file(cik, accession_number):
     return f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_number_no_dashes}/{accession_number}.txt"
 
 
-def parse_sec_edgar_full_submission_file(cik, accession_number):
+def fetch_sec_edgar_full_submission_file(cik, accession_number):
+    """
+    Takes in a CIK (basically, a company identifier) and an accession number (pointing to a specific file)
+    and returns a "full submission file" (whiich is in an XML-like format). 
+
+    This file is preferable because it includes all attachments/exhibits in the same document, so that we don't
+    have to go chasing all the ancillary documents down ourselves.
+    """
     url = build_link_to_full_submission_file(cik, accession_number)
     
     try:
@@ -257,6 +320,11 @@ def parse_sec_edgar_full_submission_file(cik, accession_number):
 
     raw_txt = response.text
 
+    return raw_txt
+
+
+def parse_sec_edgar_full_submission_file(raw_txt, return_format:str = "markdown"):
+
     # --- Step 1: Extract all <DOCUMENT>...</DOCUMENT> blocks safely ---
     documents = re.findall(r"<DOCUMENT>(.*?)</DOCUMENT>", raw_txt, re.DOTALL)
 
@@ -266,6 +334,7 @@ def parse_sec_edgar_full_submission_file(cik, accession_number):
             match = re.search(fr"<{tag}>(.*?)\n", doc)
             return match.group(1).strip() if match else None
 
+    # These weird 10-K filings can contain a bunch of other "exhibits". Find and attach them all.
     # Loop through all the documents
     for i, doc in enumerate(documents):
     
@@ -293,7 +362,8 @@ def parse_sec_edgar_full_submission_file(cik, accession_number):
 
     # --- Step 2: Now parse the TEXT field with BeautifulSoup *if* it's HTML ---
 
-    full_markdown = ""
+    full_returned_text = ""
+    
     for doc in parsed_docs:
         doc_type = doc["type"]
         filename = doc["filename"]
@@ -303,28 +373,44 @@ def parse_sec_edgar_full_submission_file(cik, accession_number):
         # st.write(f"\n--- {doc['type']} ({doc['filename']}) ---")
 
         soup = BeautifulSoup(text, "html.parser")
-        md_header = f"# {doc_type} ({filename})"
-        md_output = convert_soup_to_markdown(soup)
+        
+        text_to_add=""
+        if return_format == "markdown":
+            md_header = f"# {doc_type} ({filename})"
+            md_output = convert_soup_to_markdown(soup)
+            text_to_add = md_header + "\n" + md_output + "\n\n***\n***\n\n" # divider
+        elif return_format == "html":
+            clean_up_html_soup(soup)
+            text_to_add = f"<h1>{doc_type} ({filename})</h1> \n {soup.prettify()} \n <hr /><hr />\n" # TODO: clean up SOUP # TODO: return an error here?
+        full_returned_text += text_to_add
 
-        full_markdown += md_header + "\n" + md_output + "\n\n***\n***\n\n" # divider
-
-    return full_markdown
+    return full_returned_text
 
 def convert_soup_to_markdown(soup):
-    clean_up_soup(soup)
-    tidy_html_tables_in_soup(soup)
-    inline_styles_to_semantic(soup)
+    
+    # Handle clean-ups and other pre-processing
+    clean_up_html_soup(soup)
+
+    # Finally, make the conversion
     md_output = md( str(soup) , heading_style="ATX")
     return md_output
 
+def clean_up_html_soup(soup):
+    remove_extraneous_html_soup_elements(soup)
+    tidy_html_tables_in_soup(soup)
+    sec_edgar_items_to_h2(soup)
+    inline_styles_to_semantic(soup)
 
-def retrieve_filings_text(filings_df, cik, filing_types:list, start_year, end_year, display_progress=False):
-    
+
+def retrieve_filings_text(filings_df, cik, filing_types:list, start_year:int, end_year:int, display_progress_to_streamlit=False, return_format="markdown"):
+    """
+    Retrieves a full list of filings 
+    """
     # Filter by filing type and year
     filtered_df = filings_df[ filings_df["form"].isin(filing_types) ] 
     filtered_df = filtered_df[(filtered_df["filingDate"].dt.year.isin(range(start_year, end_year+1))) ]
 
-    md_filings_list = []
+    filings_text_list = []
 
     for index, row in filtered_df.iterrows():
         accession_number = row.get("accessionNumber")
@@ -335,25 +421,28 @@ def retrieve_filings_text(filings_df, cik, filing_types:list, start_year, end_ye
         # core_type = row.get("core_type")
         primary_document = row.get("primaryDocument")
 
-        md = parse_sec_edgar_full_submission_file(cik, accession_number)
-        md_filings_list.append(
+        # Figure out what to return
+        raw_txt = fetch_sec_edgar_full_submission_file(cik, accession_number)
+        text = parse_sec_edgar_full_submission_file(raw_txt, return_format=return_format)
+
+        filings_text_list.append(
             {
                 "accession_number": accession_number,
                 "filing_date": filing_date,
                 "report_date": report_date,
                 "form": form,
                 "items": items,
-                "md_text": md,
+                "text": text,
+                "format": return_format,
                 "primary_document": primary_document
             }
         )
+        
 
-        if display_progress:
+        if display_progress_to_streamlit:
             st.write(f"Retrieving {form} filed on {try_format_date(filing_date)}...")
     
-    #st.write("Count: ", len(filtered_df))
-    #st.dataframe(filtered_df)
-    return md_filings_list
+    return filings_text_list
 
 def try_format_date(value):
     try:
@@ -370,40 +459,55 @@ def try_format_date(value):
         pass
     return value  # Return original if not parsable
 
-def zip_all_filesand_create_button(md_filings_list, ticker, cik):
+def zip_all_files_and_create_button(filings_text_list, ticker, cik:str):
     # --- Create ZIP archive in memory ---
     zip_buffer = io.BytesIO()
+    cache = {}
 
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for filing in md_filings_list:
+        for filing in filings_text_list:
             accession_number = filing.get("accession_number")
             filing_date = filing.get("filing_date")
             filing_date = try_format_date(filing_date)
             report_date = filing.get("report_date")
             form = filing.get("form")
             items = filing.get("items")
-            md_text = filing.get("md_text")
+            text = filing.get("text")
+            return_format = filing.get("format") 
             primary_document = filing.get("primary_document")
             primary_document_link = build_link_to_primary_document(cik, accession_number, primary_document)
             
-            filename = f"{ticker} {form} ({filing_date}).txt"
+            if return_format == "markdown":
+                filename = f"{ticker} {form} ({filing_date}).md"
+            elif return_format == "html":
+                filename = f"{ticker} {form} ({filing_date}).html"
+            else:
+                raise Exception(f"Return format '{return_format}' not valid.")
 
-            header =   "---"
-            header += f"Form:             {form}"
-            header += f"Filing Date:      {filing_date}"
-            header += f"Report Date:      {report_date}"
-            header += f"Items:            {items}"
-            header += f"Primary Document: {primary_document_link}"
-            header += f"Accession Number: {accession_number}"
-            header += f"---"
-            zipf.writestr(filename, header + "\n" + md_text)
+            # Cache the filenames
+            if filename not in cache:
+                cache[filename] = 0
+            else:
+                cache[filename] += 1
+                p = Path(filename)
+                filename = f"{p.stem} ({cache[filename]}){p.suffix}"
+
+            # Build "YAML front matter" header (used commonly in Markdown files)
+            '''
+            header = [
+                "---",
+                f"Form:             \"{form}\"",
+                f"Filing Date:      \"{filing_date}\"",
+                f"Report Date:      \"{report_date}\"",
+                f"Items:            \"{items}\"",
+                f"Primary Document: \"{primary_document_link}\"",
+                f"Accession Number: \"{accession_number}\"",
+                f"---"
+            ]
+            '''
+            header = ""
+            zipf.writestr(filename, "\n".join(header) + "\n" + text)
 
     # Seek to start so Streamlit can read it
     zip_buffer.seek(0)
-
-    st.download_button(
-        label="Download All as ZIP",
-        data=zip_buffer,
-        file_name=f"{ticker} filings.zip",
-        mime="application/zip"
-    )
+    return zip_buffer

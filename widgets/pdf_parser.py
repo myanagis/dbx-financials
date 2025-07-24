@@ -91,6 +91,10 @@ def st_print_text(text, size=10, is_bold=None, is_italic=None):
 
 st.title("PDF Parser")
 
+st.write("""
+Utility to parse 
+""")
+
 uploaded_file = st.file_uploader("Upload a file")
 page = st.number_input("Page", min_value=1, max_value=100, step=1, format="%d")
 
@@ -115,6 +119,10 @@ else:
    words_df = pd.DataFrame(words)
    words_df = words_df.round(1)
    
+   if len(words_df) == 0:
+      st.warning("No text found in the PDF.")
+      
+
    page_layout_elements: dict = pdf_reader.estimate_page_layout(words_df, page_props)
 
    for layout_type, df in page_layout_elements.items():
