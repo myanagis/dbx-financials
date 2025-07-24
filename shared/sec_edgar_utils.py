@@ -2,6 +2,7 @@ import requests
 from shared import data_access
 import streamlit as st
 from bs4 import BeautifulSoup, NavigableString
+from bs4.element import Tag
 import pandas as pd
 import numpy as np
 import zipfile
@@ -34,9 +35,12 @@ def remove_extraneous_html_soup_elements(soup):
         tag.decompose()
 
     # Remove <div style="display:none"> and other hidden divs
+    
     for div in soup.find_all("div", style=True):
-        if "display:none" in div.get("style", "").replace(" ", "").lower():
-            div.decompose()
+        if div and isinstance(div, Tag):
+            style = div.get("style", "")
+            if style and "display:none" in style.replace(" ", "").lower():
+                div.decompose()
 
 
 def is_empty_cell(text):
