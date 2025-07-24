@@ -38,6 +38,7 @@ def remove_extraneous_html_soup_elements(soup):
     
     for div in soup.find_all("div", style=True):
         if div and isinstance(div, Tag):
+            
             style = div.get("style", "")
             if style and "display:none" in style.replace(" ", "").lower():
                 div.decompose()
